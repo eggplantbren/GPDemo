@@ -5,7 +5,7 @@ A basic GP demo in DNest4
 
 LICENSE: MIT.
 
-To compile (requires Eigen3):
+To obtain and compile (requires Eigen3):
 
 ```
 git clone --recursive https://github.com/eggplantbren/GPDemo
