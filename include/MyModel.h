@@ -2,7 +2,9 @@
 #define GPDemo_MyModel_h
 
 #include "DNest4.h"
+#include <Eigen/Dense>
 #include <ostream>
+#include <vector>
 
 namespace GPDemo
 {
@@ -10,7 +12,27 @@ namespace GPDemo
 class MyModel
 {
     private:
+        // Some data. See MyModel.cpp for values
+        static Eigen::VectorXd xs;
+        static Eigen::VectorXd ys;
+    public:
+        static void set_data();
 
+    private:
+        // GP hyperparameters - assuming squared exponential
+        double A, L;
+
+        // Covariance matrix and its cholesky decomposition
+        Eigen::MatrixXd C;
+        Eigen::LLT<Eigen::MatrixXd> cholesky;        
+
+        // GP function values and latent N(0,1) variables
+        Eigen::VectorXd mus;
+        Eigen::VectorXd ns;
+
+        // Compute mus and covariance matrix
+        void compute_mus();
+        void compute_C();
 
     public:
         // Constructor only gives size of params
