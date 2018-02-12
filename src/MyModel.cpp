@@ -105,7 +105,7 @@ double MyModel::log_likelihood() const
     // dimensionality of the problem down to two (the hyperparameters)!
 
     logL += -0.5*log(2*M_PI)*ys.size();
-    double tau = pow(0.01, -2); // Very small noise sd of 0.01 for the data
+    double tau = pow(0.05, -2); // Very small noise sd of 0.05 for the data
 
     for(int i=0; i<ys.size(); ++i)
         logL += -0.5*pow((ys[i] - mus[i])*tau, 2);
