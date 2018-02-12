@@ -19,8 +19,9 @@ class MyModel
         static void set_data();
 
     private:
-        // GP hyperparameters - assuming squared exponential
+        // GP hyperparameters - assuming squared exponential covariance
         double A, L;
+        double B; // mean level
 
         // Covariance matrix and its cholesky decomposition
         Eigen::MatrixXd C;

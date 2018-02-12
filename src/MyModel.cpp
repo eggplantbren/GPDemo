@@ -11,7 +11,7 @@ Eigen::VectorXd MyModel::ys(10);
 void MyModel::set_data()
 {
     xs << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0;
-    ys << 5.0, 4.8, 4.7, 4.8, 4.9, 5.1, 5.3, 5.2, 5.0,  5.1;
+    ys << 1.0, 3.8, 3.7, 3.8, 2.9, 2.4, 2.0, 1.3, 0.4, -0.2;
 }
 
 MyModel::MyModel()
@@ -27,6 +27,7 @@ void MyModel::from_prior(DNest4::RNG& rng)
     // Dumb priors
     A = 10.0*rng.rand();
     L = 100.0*rng.rand();
+    B = -10.0 + 20.0*rng.rand();
 
     // Note int i instead of size_t i, because eigen reports sizes with an
     // int, whereas stl vectors use a size_t
@@ -41,7 +42,7 @@ double MyModel::perturb(DNest4::RNG& rng)
 {
     double logH = 0.0;
 
-    int which = rng.rand_int(3);
+    int which = rng.rand_int(4);
     if(which == 0)
     {
         A += 10.0*rng.randh();
@@ -50,9 +51,14 @@ double MyModel::perturb(DNest4::RNG& rng)
     }
     else if(which == 1)
     {
-        L += 10.0*rng.randh();
+        L += 100.0*rng.randh();
         DNest4::wrap(L, 0.0, 100.0);
         compute_C();
+    }
+    else if(which == 2)
+    {
+        B += 20.0*rng.randh();
+        DNest4::wrap(B, -10.0, 10.0);
     }
     else
     {
@@ -70,6 +76,10 @@ void MyModel::compute_mus()
 {
     // Multiply ns by lower triangular matrix
     mus = cholesky.matrixL()*ns;
+
+    // Add mean function
+    for(int i=0; i<mus.size(); ++i)
+        mus[i] += B;
 }
 
 void MyModel::compute_C()
@@ -88,7 +98,7 @@ void MyModel::compute_C()
 
             // Since it's symmetric
             if(i != j)
-                C(i, j) = C(j, i);
+                C(j, i) = C(i, j);
         }
     }
 
@@ -104,11 +114,14 @@ double MyModel::log_likelihood() const
     // we could have explicitly marginalised over the ns, reducing the
     // dimensionality of the problem down to two (the hyperparameters)!
 
-    logL += -0.5*log(2*M_PI)*ys.size();
-    double tau = pow(0.05, -2); // Very small noise sd of 0.05 for the data
+
+    // SD of noise in data
+    double sigma = 0.05;
+    logL += -0.5*log(2*M_PI*sigma*sigma)*ys.size();
+    double tau = pow(sigma, -2); 
 
     for(int i=0; i<ys.size(); ++i)
-        logL += -0.5*pow((ys[i] - mus[i])*tau, 2);
+        logL += -0.5*pow(ys[i] - mus[i], 2)*tau;
 
     return logL;
 }
